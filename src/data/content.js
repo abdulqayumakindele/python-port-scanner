@@ -103,7 +103,7 @@ export const exampleNote = 'Sample output from a scan of two local test servers 
 // Screenshot: save your own screenshot as public/images/example-scan.png,
 // then set screenshot to '/images/example-scan.png'. While it is '' the site
 // shows a clearly marked placeholder instead.
-export const screenshot = '';
+export const screenshot = '/images/example-scan.png';
 export const screenshotTodo = 'Run: python3 tool/port_scanner.py 127.0.0.1 -p 1-1024 -b in a terminal, then screenshot the whole result (target header, results table and scan summary). Scan only your own machine.';
 
 export const bannerNotes = [
