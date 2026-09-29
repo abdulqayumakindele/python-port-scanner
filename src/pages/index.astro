@@ -1,0 +1,34 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { site, stack, features } from '../data/content.js';
+---
+<Layout title={site.name}>
+<Header/>
+<main id="main-content">
+  <section class="hero wrap" aria-labelledby="hero-name">
+    <span class="eyebrow" aria-hidden="true">Cybersecurity · Python</span>
+    <h1 id="hero-name">{site.brand}</h1>
+    <h2>{site.tagline}</h2>
+    <p>Check which ports are open on a target, learn what each one means, and read the code behind it.</p>
+    <div class="actions">
+      <a class="btn primary" href="/usage">Get Started</a>
+      <a class="btn" href="/code">View Source</a>
+    </div>
+  </section>
+  <section class="section" aria-labelledby="feat-h">
+    <div class="wrap">
+      <h2 class="section-title" id="feat-h">Features</h2>
+      <p class="section-lead">Stack: {stack.join(' · ')}</p>
+      <ul class="grid-3" role="list" style="padding:0;list-style:none;">
+        {features.map(f => (<li><article class="card"><h3>{f.title}</h3><p class="muted" style="font-size:.9rem;margin-top:8px;">{f.description}</p></article></li>))}
+      </ul>
+    </div>
+  </section>
+  <section class="section" aria-labelledby="ethics-h">
+    <div class="wrap"><div class="notice" role="note"><strong id="ethics-h">Ethical use only.</strong> Scan only systems you own or have written permission to test. <a href="/ethics" style="color:#65a8ff;">Read more →</a></div></div>
+  </section>
+</main>
+<Footer/>
+</Layout>

@@ -1,0 +1,22 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { site } from '../data/content.js';
+import code from '../../tool/port_scanner.py?raw';
+---
+<Layout title={`Source Code | ${site.brand}`}>
+<Header/>
+<main id="main-content">
+  <div class="wrap page-header">
+    <span class="tag" aria-hidden="true">Open Source</span>
+    <h1 class="page-title" style="margin-top:12px;">Source Code</h1>
+    <p class="page-subtitle">The full scanner, rendered straight from tool/port_scanner.py.</p>
+  </div>
+  <section class="section"><div class="wrap">
+    <div class="actions" style="margin-bottom:16px;"><a class="btn primary" href={site.repo} target="_blank" rel="noopener noreferrer">View on GitHub ↗<span class="sr-only"> (opens in new tab)</span></a></div>
+    <pre class="code-block"><code>{code}</code></pre>
+  </div></section>
+</main>
+<Footer/>
+</Layout>

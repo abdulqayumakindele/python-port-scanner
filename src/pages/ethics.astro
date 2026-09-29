@@ -1,0 +1,21 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { site, ethics } from '../data/content.js';
+---
+<Layout title={`Ethical Use | ${site.brand}`}>
+<Header/>
+<main id="main-content">
+  <div class="wrap page-header">
+    <span class="tag" aria-hidden="true">Responsibility</span>
+    <h1 class="page-title" style="margin-top:12px;">Ethical Use</h1>
+    <p class="page-subtitle">Learn responsibly.</p>
+  </div>
+  <section class="section"><div class="wrap prose">
+    <div class="notice" role="note"><strong>Only scan what you are allowed to test.</strong></div>
+    <ul>{ethics.map(e => <li class="muted" style="margin-bottom:8px;">{e}</li>)}</ul>
+  </div></section>
+</main>
+<Footer/>
+</Layout>

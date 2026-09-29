@@ -1,0 +1,40 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { site, options, examples, install, exampleOutput, exampleNote, screenshot, screenshotTodo } from '../data/content.js';
+---
+<Layout title={`Usage | ${site.brand}`}>
+<Header/>
+<main id="main-content">
+  <div class="wrap page-header">
+    <span class="tag" aria-hidden="true">Guide</span>
+    <h1 class="page-title" style="margin-top:12px;">Usage</h1>
+    <p class="page-subtitle">Requires Python 3.8+ and no external packages.</p>
+  </div>
+  <section class="section"><div class="wrap prose">
+    <h2 style="margin-top:0;">Install</h2>
+    <ol class="steps">{install.map(s => <li>{s}</li>)}</ol>
+    <h2>Run it</h2>
+    {examples.map(e => <pre class="code-block"><code>{e}</code></pre>)}
+    <h2>Options</h2>
+    <table class="data-table"><thead><tr><th>Option</th><th>Meaning</th><th>Default</th></tr></thead>
+    <tbody>{options.map(([o,m,d]) => <tr><td><code>{o}</code></td><td>{m}</td><td>{d}</td></tr>)}</tbody></table>
+    <p class="muted">Invalid input (a backwards range like <code>1000-100</code>, a port above 65535, zero threads, and so on) stops with a plain-English message instead of a crash.</p>
+    <h2>Example output</h2>
+    <pre class="code-block"><code>{exampleOutput}</code></pre>
+    <p class="muted" style="font-size:.85rem;">{exampleNote}</p>
+    {screenshot ? (
+      <img src={screenshot} alt="Terminal screenshot of a port scan of localhost showing open ports and the scan summary" style="max-width:100%;border-radius:10px;"/>
+    ) : (
+      <div class="notice" role="note">
+        <strong>Screenshot placeholder</strong> — a real terminal screenshot will be added here.
+        <p class="muted" style="font-size:.85rem;margin-top:8px;">{screenshotTodo}</p>
+      </div>
+    )}
+    <h2>Run the tests</h2>
+    <pre class="code-block"><code>python3 -m unittest discover -s tests -v</code></pre>
+  </div></section>
+</main>
+<Footer/>
+</Layout>
