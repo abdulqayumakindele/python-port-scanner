@@ -78,13 +78,7 @@ Note: many services send no banner, so '(none)' is normal.
 -------------------------------------------------------
 ```
 
-<!-- SCREENSHOT PLACEHOLDER: add a real terminal screenshot here before launch.
-     Save it as docs/example-scan.png, then replace this comment with:
-     ![Example scan of localhost](docs/example-scan.png)
-     What to capture: run `python3 tool/port_scanner.py 127.0.0.1 -p 1-1024 -b`
-     against your own machine and screenshot the header, results table and scan summary. -->
-
-> *Screenshot placeholder - a real terminal screenshot will be added here.*
+![Example scan of localhost showing one open port and the scan summary](public/images/example-scan.png)
 
 ## About banner grabbing
 - Banner reading is **passive**: after a port opens, the scanner waits up to one second and reads whatever the service sends first. It never sends data itself.
