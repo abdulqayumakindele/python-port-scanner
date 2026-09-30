@@ -39,9 +39,9 @@ export const options = [
 ];
 
 export const examples = [
-  'python3 port_scanner.py 127.0.0.1',
-  'python3 port_scanner.py scanme.nmap.org -p 20-100 -b',
-  'python3 port_scanner.py 192.168.1.1 -p 22,80,443 -t 50 --timeout 1',
+  'python3 tool/port_scanner.py 127.0.0.1',
+  'python3 tool/port_scanner.py scanme.nmap.org -p 20-100 -b',
+  'python3 tool/port_scanner.py 192.168.1.1 -p 22,80,443 -t 50 --timeout 1',
 ];
 
 export const commonPorts = [
