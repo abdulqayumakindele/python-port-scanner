@@ -84,6 +84,7 @@ Note: many services send no banner, so '(none)' is normal.
 - Banner reading is **passive**: after a port opens, the scanner waits up to one second and reads whatever the service sends first. It never sends data itself.
 - **Many services send no banner.** Web servers (HTTP/HTTPS) are the common example - they wait for a request first - so `(none)` is normal and does not mean the port is closed.
 - Banners are shortened, cleaned of control characters, and may be missing, generic or misleading. Treat them as a hint, not proof.
+- If most of the bytes received are not printable text, the scanner prints a short summary such as `(binary data, 12 bytes: 3c7a...)` instead of garbled characters.
 - Banner reading only adds waiting time on ports that are already open.
 
 ## Limitations

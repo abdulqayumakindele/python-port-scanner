@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import { site, howItWorks, commonPorts, limitations, bannerNotes } from '../data/content.js';
+import { site, howItWorks, commonPorts, limitations, bannerNotes, fieldNote } from '../data/content.js';
 ---
 <Layout title={`How It Works | ${site.brand}`}>
 <Header/>
@@ -21,6 +21,8 @@ import { site, howItWorks, commonPorts, limitations, bannerNotes } from '../data
     <ul>{bannerNotes.map(n => <li class="muted" style="margin-bottom:8px;">{n}</li>)}</ul>
     <h2>Limitations</h2>
     <ul>{limitations.map(l => <li class="muted">{l}</li>)}</ul>
+    <h2>{fieldNote.title}</h2>
+    {fieldNote.paragraphs.map(t => <p class="muted">{t}</p>)}
   </div></section>
 </main>
 <Footer/>

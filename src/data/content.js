@@ -111,4 +111,15 @@ export const bannerNotes = [
   'Many services stay silent until a client speaks first — web servers (HTTP/HTTPS) are the common example — so an empty banner ("(none)") is normal and does not mean the port is closed.',
   'Banners are shortened, cleaned of control characters, and can be missing, generic, or misleading. Treat them as a hint, not proof of what is running.',
   'Banner reading only adds waiting time on ports that are already open, so it does not noticeably slow scans of mostly closed ports.',
+  'Binary banners: if most of the bytes a service sends are not printable text, the scanner shows a short summary such as "(binary data, 12 bytes: 3c7a...)" instead of garbled characters.',
 ];
+
+// A short story about a bug found through real use (edit the wording to match what really happened).
+export const fieldNote = {
+  title: 'A bug found through real use',
+  paragraphs: [
+    'While testing the scanner against scanme.nmap.org, the official practice target from the Nmap project, I scanned port 9929 and the banner column filled with garbled characters that broke the table layout.',
+    'The cause was that the scanner decoded whatever bytes it received straight into text. Binary data does not decode into anything meaningful, so it appeared as junk. The fix was to check the raw bytes before decoding: if fewer than 85% of them are printable characters, the scanner now shows a short summary such as "(binary data, 12 bytes: 3c7a...)" instead.',
+    'I added tests for it, including a fake server that sends binary bytes, so a full scan is checked for garbage output. The lesson: testing against real services finds bugs that local test servers miss.',
+  ],
+};

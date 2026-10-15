@@ -129,9 +129,56 @@ class ServiceNameTests(unittest.TestCase):
         self.assertIn("SSH", ps.service_name(22))
         self.assertIn("HTTPS", ps.service_name(443))
 
+    def test_added_alternate_web_and_nmap_test_ports(self):
+        self.assertIn("HTTP-alt", ps.service_name(8000))
+        self.assertIn("HTTP-alt", ps.service_name(8080))
+        self.assertIn("HTTPS-alt", ps.service_name(8443))
+        self.assertIn("Nping", ps.service_name(9929))
+
     def test_unknown_port(self):
         self.assertIsInstance(ps.service_name(54321), str)
         self.assertTrue(ps.service_name(54321))
+
+
+class FormatBannerTests(unittest.TestCase):
+    def test_empty_bytes(self):
+        self.assertEqual(ps.format_banner(b""), "(none)")
+
+    def test_plain_text_banner_is_clean(self):
+        self.assertEqual(ps.format_banner(b"220 hello\r\n"), "220 hello")
+        self.assertEqual(ps.format_banner(b"SSH-2.0-OpenSSH_9.6\r\n"), "SSH-2.0-OpenSSH_9.6")
+
+    def test_line_breaks_and_tabs_become_spaces(self):
+        self.assertEqual(ps.format_banner(b"line one\r\nline two\n"), "line one line two")
+        self.assertEqual(ps.format_banner(b"a\tb"), "a b")
+
+    def test_unprintable_bytes_give_binary_summary(self):
+        result = ps.format_banner(bytes([0, 255, 254]))
+        self.assertTrue(result.startswith("(binary data"))
+        self.assertIn("3 bytes", result)
+        self.assertIn("00fffe", result)
+
+    def test_long_binary_shows_only_a_short_preview(self):
+        result = ps.format_banner(bytes(range(20)))
+        self.assertIn("20 bytes", result)
+        self.assertIn("...", result)
+        self.assertLess(len(result), 60)
+
+    def test_85_percent_boundary(self):
+        mostly_text = b"a" * 17 + b"\x00\x01\x02"       # 17/20 = 85% printable -> still text
+        self.assertEqual(ps.format_banner(mostly_text), "a" * 17)
+        mostly_binary = b"a" * 16 + b"\x00\x01\x02\x03"  # 16/20 = 80% printable -> binary
+        self.assertTrue(ps.format_banner(mostly_binary).startswith("(binary data"))
+
+    def test_check_uses_raw_bytes_not_decoded_text(self):
+        # Invalid UTF-8 bytes would vanish when decoded, hiding that this is binary.
+        self.assertTrue(ps.format_banner(b"\xff\xfe\xfd\xfc\xfb\xfa").startswith("(binary data"))
+
+    def test_result_is_always_one_line(self):
+        for raw in (b"a\nb\r\nc", bytes(range(30)), b"\n\n\n", b"x" * 500):
+            with self.subTest(raw=raw[:10]):
+                self.assertNotIn("\n", ps.format_banner(raw))
+                self.assertNotIn("\r", ps.format_banner(raw))
 
 
 class ScanTests(unittest.TestCase):
@@ -153,13 +200,19 @@ class ScanTests(unittest.TestCase):
         server = LocalServer()          # accepts but sends nothing
         self.addCleanup(server.close)
         port, banner = ps.scan_port("127.0.0.1", server.port, 1, True)
-        self.assertEqual(banner, "")
+        self.assertEqual(banner, "(none)")
 
-    def test_banner_strips_control_characters(self):
-        server = LocalServer(banner=b"hi\x00\x07there\n")
+    def test_banner_strips_stray_control_characters_in_mostly_text(self):
+        server = LocalServer(banner=b"hello\x00world service ready\n")
         self.addCleanup(server.close)
         _, banner = ps.scan_port("127.0.0.1", server.port, 1, True)
-        self.assertEqual(banner, "hithere")
+        self.assertEqual(banner, "helloworld service ready")
+
+    def test_binary_banner_gives_summary_not_garbage(self):
+        server = LocalServer(banner=bytes([0, 255, 254, 1, 2, 3, 4, 5, 6, 7, 8, 9]))
+        self.addCleanup(server.close)
+        _, banner = ps.scan_port("127.0.0.1", server.port, 1, True)
+        self.assertTrue(banner.startswith("(binary data, 12 bytes"))
 
     def test_run_scan_finds_only_open_ports(self):
         server = LocalServer()
@@ -178,6 +231,14 @@ class CliTests(unittest.TestCase):
         for text in ("Target", "Ports scanned", "Open ports", "Duration",
                      str(server.port), "220 demo"):
             self.assertIn(text, out)
+
+    def test_cli_does_not_print_garbage_for_binary_banner(self):
+        server = LocalServer(banner=bytes([0, 255, 254, 1, 2, 3, 4, 5, 6, 7, 8, 9]))
+        self.addCleanup(server.close)
+        code, out, _ = run_cli("127.0.0.1", "-p", str(server.port), "-b")
+        self.assertEqual(code, 0)
+        self.assertIn("(binary data, 12 bytes", out)
+        self.assertTrue(all(ch.isprintable() or ch == "\n" for ch in out))
 
     def test_no_open_ports_is_not_an_error(self):
         code, out, _ = run_cli("127.0.0.1", "-p", str(free_port()))

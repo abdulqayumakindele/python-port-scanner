@@ -22,6 +22,8 @@ from datetime import datetime
 MAX_THREADS = 1000      # sanity limit so a typo cannot exhaust your system
 BANNER_WAIT = 1.0       # seconds to wait for a banner on an already-open port
 BANNER_MAX_CHARS = 80
+PRINTABLE_MIN_RATIO = 0.85   # below this share of printable bytes, treat a banner as binary
+BINARY_PREVIEW_BYTES = 6     # how many bytes to show (as hex) for binary banners
 
 COMMON_PORTS = {
     21: "FTP - file transfer",
@@ -36,7 +38,10 @@ COMMON_PORTS = {
     445: "SMB - Windows file sharing",
     3306: "MySQL - database",
     3389: "RDP - Windows remote desktop",
+    8000: "HTTP-alt - alternate web server (often used for testing)",
     8080: "HTTP-alt - alternate web server",
+    8443: "HTTPS-alt - alternate encrypted web server",
+    9929: "Nping echo - Nmap's test service",
 }
 
 
@@ -167,26 +172,47 @@ def service_name(port):
         return "unknown service"
 
 
+def format_banner(raw):
+    """
+    Turn the raw bytes a service sent into one safe line of text for the table.
+
+    The check is done on the RAW bytes, before any decoding, because decoding
+    can turn binary junk into odd characters that look like text.
+    """
+    if not raw:
+        return "(none)"
+
+    # Printable ASCII is bytes 32-126; tab, newline and carriage return are also fine.
+    printable = sum(1 for b in raw if 32 <= b <= 126 or b in (9, 10, 13))
+    if printable / len(raw) < PRINTABLE_MIN_RATIO:
+        preview = raw[:BINARY_PREVIEW_BYTES].hex()
+        more = "..." if len(raw) > BINARY_PREVIEW_BYTES else ""
+        return f"(binary data, {len(raw)} bytes: {preview}{more})"
+
+    # Mostly text: decode, turn line breaks/tabs into single spaces, trim the ends.
+    text = " ".join(raw.decode("utf-8", errors="ignore").split())
+    text = "".join(ch for ch in text if ch.isprintable())
+    return text[:BANNER_MAX_CHARS] or "(none)"
+
+
 def grab_banner(sock, wait=BANNER_WAIT):
     """
-    Passively read a short greeting from an already-open connection.
-    Nothing is sent. Many services (web servers, for example) stay silent
-    until they receive a request, so an empty result is normal.
+    Passively read a short greeting from an already-open connection and
+    return it as display text (see format_banner). Nothing is sent.
+    Many services (web servers, for example) stay silent until a client
+    speaks first, so "(none)" is normal.
     """
     try:
         sock.settimeout(wait)
-        data = sock.recv(128)
+        raw = sock.recv(128)
     except OSError:          # timeout, reset, etc. -> no banner
-        return ""
-    lines = data.decode("utf-8", errors="ignore").strip().splitlines()
-    if not lines:
-        return ""
-    clean = "".join(ch for ch in lines[0] if ch.isprintable())
-    return clean[:BANNER_MAX_CHARS]
+        raw = b""
+    return format_banner(raw)
 
 
 def scan_port(target, port, timeout, banner):
-    """Return (port, banner_text) if the port is open, otherwise None."""
+    """Return (port, banner_text) if the port is open, otherwise None.
+    banner_text is "" unless banner reading was requested."""
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             sock.settimeout(timeout)
